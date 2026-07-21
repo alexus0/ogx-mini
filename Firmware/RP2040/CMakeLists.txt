@@ -71,7 +71,12 @@ set(SOURCES_BOARD
     ${SRC}/USBDevice/DeviceDriver/WebApp/WebApp.cpp
     ${SRC}/USBDevice/DeviceDriver/XInput/tud_xinput/tud_xinput.cpp
     ${SRC}/USBDevice/DeviceDriver/XboxOG/tud_xid/tud_xid.cpp
+
+    # Bluetooth Universal Bridge Components
+    ${SRC}/Calibration/CalibrationManager.cpp
+    ${SRC}/Integration/BluetoothIntegration.cpp
 )
+
 set(LIBS_BOARD
     # Base
     pico_stdlib
@@ -88,6 +93,7 @@ set(LIBS_BOARD
     #fix16
     libfixmath
 )
+
 set(INC_DIRS_BOARD
 )
 
