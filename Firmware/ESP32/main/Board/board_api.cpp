@@ -32,6 +32,13 @@ void init_board()
         }
         xSemaphoreGive(leds_mutex_);
     }
+
+    if constexpr (HAS_PAIR_BUTTON)
+    {
+        gpio_reset_pin(PAIR_BUTTON_PIN);
+        gpio_set_direction(PAIR_BUTTON_PIN, GPIO_MODE_INPUT);
+        gpio_set_pull_mode(PAIR_BUTTON_PIN, GPIO_PULLUP_ONLY);
+    }
     // if (xSemaphoreTake(reset_mutex_, portMAX_DELAY))
     // {
     //     gpio_reset_pin(RESET_PIN);
@@ -39,6 +46,16 @@ void init_board()
     //     gpio_set_level(RESET_PIN, 1);
     //     xSemaphoreGive(reset_mutex_);
     // }
+}
+
+bool get_pair_button_pressed()
+{
+    if constexpr (!HAS_PAIR_BUTTON)
+    {
+        return false;
+    }
+
+    return gpio_get_level(PAIR_BUTTON_PIN) == 0;
 }
 
 //Set LED by index

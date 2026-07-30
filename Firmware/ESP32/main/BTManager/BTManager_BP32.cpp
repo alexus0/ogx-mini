@@ -14,8 +14,9 @@ void BTManager::init(int argc, const char** arg_V)
 
 void BTManager::init_complete_cb(void) 
 {
-    uni_bt_enable_new_connections_unsafe(true);
-    // uni_bt_del_keys_unsafe();
+    uni_bt_allow_incoming_connections(true);
+    uni_bt_stop_scanning_unsafe();
+    refresh_status_display();
     uni_property_dump_all();
 }
 

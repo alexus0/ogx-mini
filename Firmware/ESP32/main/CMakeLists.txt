@@ -8,6 +8,7 @@ idf_component_register(
         "BTManager/BTManager.cpp"
         "BTManager/BTManager_BP32.cpp"
         "BLEServer/BLEServer.cpp"
+        "Display/OLEDDisplay.cpp"
         "I2CDriver/I2CDriver.cpp"
         "UserSettings/UserSettings.cpp"
         "UserSettings/UserProfile.cpp"

@@ -100,6 +100,16 @@ Please visit [**this page**](https://bluepad32.readthedocs.io/en/latest/supporte
 ## Hardware
 For Pi Pico, RP2040-Zero, 4 channel, and ESP32 configurations, please see the hardware folder for diagrams.
 
+### ESP32 Dev Module add-on
+- The ESP32 firmware now supports a **0.91\" SSD1306 OLED** on the same I2C bus as the RP2040 link.
+- Default ESP32 wiring:
+    - **OLED SDA** -> GPIO 21
+    - **OLED SCL** -> GPIO 22
+    - **OLED VCC / GND** -> 3.3V / GND
+    - **Pair button** -> GPIO 32 to GND (active low, internal pull-up enabled)
+- Press the pair button to clear old Bluetooth bond data, start scanning, and show pairing state on the OLED.
+- The default ESP32 I2C baudrate is now **400 kHz** so the OLED and RP2040 can share the bus reliably.
+
 I've designed a PCB for the RP2040-Zero so you can make a small form-factor adapter yourself. The gerber files, schematic, and BOM are in Hardware folder.
 
 <img src="images/OGX-Mini-rpzero-int.jpg" alt="OGX-Mini Boards" width="400">

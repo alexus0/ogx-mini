@@ -18,7 +18,7 @@ menu "OGXMini Options"
 
     config I2C_BAUDRATE
         int "Set I2C baudrate"
-        default 1000000
+        default 400000
 
     config RESET_PIN
         int "Set reset pin"
@@ -27,6 +27,23 @@ menu "OGXMini Options"
     config MULTI_SLAVE_MODE
         bool "Enable multiple slave devices"
         default n
+
+    config PAIR_BUTTON_PIN
+        int "Set pairing button pin"
+        default 255
+
+    config PAIRING_MODE_WINDOW_MS
+        int "Set pairing mode timeout in milliseconds"
+        default 60000
+
+    config ENABLE_OLED_DISPLAY
+        bool "Enable SSD1306 OLED status display"
+        default n
+
+    config OLED_I2C_ADDRESS
+        hex "Set OLED I2C address"
+        default 0x3C
+        depends on ENABLE_OLED_DISPLAY
 
     config ENABLE_LED_1
         bool "Enable LED 1"

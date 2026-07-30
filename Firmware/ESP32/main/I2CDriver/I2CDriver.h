@@ -1,9 +1,11 @@
 #ifndef _I2C_DRIVER_H_
 #define _I2C_DRIVER_H_
 
+#include <array>
 #include <cstdint>
 #include <cstring>
 #include <functional>
+#include <vector>
 #include <driver/i2c.h>
 
 #include "sdkconfig.h"
@@ -63,6 +65,7 @@ public:
     void run_tasks();
 
     void write_packet(uint8_t address, const PacketIn& data_in);
+    void write_bytes(uint8_t address, std::vector<uint8_t> data);
     void read_packet(uint8_t address, std::function<void(const PacketOut&)> callback);
 
 private:
@@ -72,7 +75,7 @@ private:
     i2c_port_t i2c_port_ = I2C_NUM_0;
     bool initialized_ = false;
 
-    static inline esp_err_t i2c_write_blocking(uint8_t address, const uint8_t* buffer, size_t len) 
+    inline esp_err_t i2c_write_blocking(uint8_t address, const uint8_t* buffer, size_t len)
     {
         i2c_cmd_handle_t cmd = i2c_cmd_link_create();
         i2c_master_start(cmd);
@@ -80,12 +83,12 @@ private:
         i2c_master_write(cmd, buffer, len, true);
         i2c_master_stop(cmd);
 
-        esp_err_t ret = i2c_master_cmd_begin(I2C_NUM_0, cmd, pdMS_TO_TICKS(2));
+        esp_err_t ret = i2c_master_cmd_begin(i2c_port_, cmd, pdMS_TO_TICKS(20));
         i2c_cmd_link_delete(cmd);
         return ret;
     }
 
-    static inline esp_err_t i2c_read_blocking(uint8_t address, uint8_t* buffer, size_t len) 
+    inline esp_err_t i2c_read_blocking(uint8_t address, uint8_t* buffer, size_t len)
     {
         i2c_cmd_handle_t cmd = i2c_cmd_link_create();
         i2c_master_start(cmd);
@@ -99,7 +102,7 @@ private:
         i2c_master_read_byte(cmd, buffer + len - 1, I2C_MASTER_NACK);
         i2c_master_stop(cmd);
         
-        esp_err_t ret = i2c_master_cmd_begin(I2C_NUM_0, cmd, pdMS_TO_TICKS(2));
+        esp_err_t ret = i2c_master_cmd_begin(i2c_port_, cmd, pdMS_TO_TICKS(20));
         i2c_cmd_link_delete(cmd);
         return ret;
     }

@@ -8,6 +8,7 @@
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 
+#include "Display/OLEDDisplay.h"
 #include "I2CDriver/I2CDriver.h"
 #include "Gamepad/Gamepad.h"
 
@@ -33,6 +34,7 @@ private:
 
     static constexpr uint32_t FEEDBACK_TIME_MS = 200;
     static constexpr uint32_t LED_TIME_MS = 500;
+    static constexpr uint32_t BUTTON_CHECK_TIME_MS = 50;
 
     struct Device
     {
@@ -51,15 +53,25 @@ private:
 
     std::array<Device, MAX_GAMEPADS> devices_;
     I2CDriver i2c_driver_;
+    OLEDDisplay oled_display_;
 
     btstack_timer_source_t fb_timer_;
+    btstack_timer_source_t button_timer_;
     bool fb_timer_running_ = false;
+    bool pairing_mode_ = false;
+    bool pairing_button_latched_ = false;
+    uint32_t pairing_mode_time_left_ms_ = 0;
+    uint32_t pairing_status_seconds_ = 0;
 
     void send_driver_type(DeviceDriverType driver_type);
     void manage_connection(uint8_t index, bool connected);
+    void refresh_status_display();
+    void start_pairing_mode();
+    uint8_t connected_count() const;
     
     static uni_hid_device_t* get_connected_bp32_device(uint8_t index);
     static void check_led_cb(btstack_timer_source *ts);
+    static void button_timer_cb(btstack_timer_source *ts);
     static void send_feedback_cb(void* context);
     static void feedback_timer_cb(btstack_timer_source *ts);
     static void driver_update_timer_cb(btstack_timer_source *ts);

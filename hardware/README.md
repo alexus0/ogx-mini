@@ -9,6 +9,16 @@ The Pico 2 will likely require 4.7k resistors between the USB data lines and gro
 This is the minumum amount of connections you'll want for this to work and the diagram assumes you're powering the Pico and ESP32 each separately via USB (do not connect power between the 2 boards if so). A more complex configuration is possible, making the Pi Pico able to program the ESP32, but I'll update the repo with that diagram later.
 ![OGX-Mini](../images/DiagramPicoESP32.png)
 
+## ESP32 Dev Module OLED and pairing button
+- Use an **SSD1306 0.91\" I2C OLED** on the ESP32 I2C lines:
+  - GPIO 21 -> SDA
+  - GPIO 22 -> SCL
+  - 3.3V -> VCC
+  - GND -> GND
+- Use a **momentary pairing button** from **GPIO 32** to **GND**.
+- The OLED shows idle, pairing, and connected states.
+- Pressing the pairing button clears saved Bluetooth pairings and starts controller pairing mode.
+
 # RP2040-Zero
 ![OGX-Mini](../images/DiagramRPZero.png)
 

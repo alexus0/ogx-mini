@@ -59,6 +59,14 @@ void I2CDriver::write_packet(uint8_t address, const PacketIn& data_in)
     });
 }
 
+void I2CDriver::write_bytes(uint8_t address, std::vector<uint8_t> data)
+{
+    task_queue_.push([this, address, data = std::move(data)]() mutable
+    {
+        i2c_write_blocking(address, data.data(), data.size());
+    });
+}
+
 void I2CDriver::read_packet(uint8_t address, std::function<void(const PacketOut&)> callback) 
 {
     task_queue_.push([this, address, callback]() 

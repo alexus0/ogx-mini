@@ -10,8 +10,12 @@
 
 namespace board_api
 {
+    static constexpr uint8_t INVALID_GPIO_NUM = 255;
     static constexpr gpio_num_t RESET_PIN = static_cast<gpio_num_t>(CONFIG_RESET_PIN);
     static_assert(RESET_PIN < MAX_GPIO_NUM, "Invalid RESET_PIN");
+    static constexpr bool HAS_PAIR_BUTTON = CONFIG_PAIR_BUTTON_PIN < MAX_GPIO_NUM;
+    static constexpr gpio_num_t PAIR_BUTTON_PIN =
+        static_cast<gpio_num_t>(HAS_PAIR_BUTTON ? CONFIG_PAIR_BUTTON_PIN : INVALID_GPIO_NUM);
 
     static constexpr gpio_num_t LED_PINS[] =
     {
@@ -36,6 +40,7 @@ namespace board_api
     static constexpr uint8_t NUM_LEDS = sizeof(LED_PINS) / sizeof(LED_PINS[0]);
 
     void init_board();
+    bool get_pair_button_pressed();
     void set_led(uint8_t index, bool state);
     void set_led(bool state);
 }

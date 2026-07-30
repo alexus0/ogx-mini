@@ -26,6 +26,7 @@ void BTManager::run_task()
         static_cast<gpio_num_t>(CONFIG_I2C_SCL_PIN),  
         CONFIG_I2C_BAUDRATE
     );
+    oled_display_.initialize(i2c_driver_);
 
     xTaskCreatePinnedToCore(
         [](void* parameter)
@@ -57,6 +58,11 @@ void BTManager::run_task()
     btstack_run_loop_set_timer(&driver_update_timer, UserSettings::GP_CHECK_DELAY_MS);
     btstack_run_loop_add_timer(&driver_update_timer);
 
+    button_timer_.process = button_timer_cb;
+    button_timer_.context = nullptr;
+    btstack_run_loop_set_timer(&button_timer_, BUTTON_CHECK_TIME_MS);
+    btstack_run_loop_add_timer(&button_timer_);
+
     BLEServer::init_server();
 
     //Doesn't return
@@ -84,6 +90,40 @@ bool BTManager::any_connected()
     return false;
 }
 
+uint8_t BTManager::connected_count() const
+{
+    uint8_t count = 0;
+    for (const auto& device : devices_)
+    {
+        if (device.connected.load())
+        {
+            ++count;
+        }
+    }
+    return count;
+}
+
+void BTManager::refresh_status_display()
+{
+    if (any_connected())
+    {
+        pairing_status_seconds_ = 0;
+        oled_display_.show_connected(connected_count());
+        return;
+    }
+
+    if (pairing_mode_)
+    {
+        const uint32_t seconds_remaining = (pairing_mode_time_left_ms_ + 999) / 1000;
+        pairing_status_seconds_ = seconds_remaining;
+        oled_display_.show_pairing(seconds_remaining);
+        return;
+    }
+
+    pairing_status_seconds_ = 0;
+    oled_display_.show_idle();
+}
+
 void BTManager::check_led_cb(btstack_timer_source *ts)
 {
     static bool led_state = false;
@@ -102,6 +142,64 @@ void BTManager::check_led_cb(btstack_timer_source *ts)
     }
 
     btstack_run_loop_set_timer(ts, LED_TIME_MS);
+    btstack_run_loop_add_timer(ts);
+}
+
+void BTManager::start_pairing_mode()
+{
+    for (uint8_t i = 0; i < MAX_GAMEPADS; ++i)
+    {
+        if (is_connected(i))
+        {
+            uni_bt_disconnect_device_safe(i);
+        }
+    }
+
+    uni_bt_del_keys_unsafe();
+    uni_bt_allow_incoming_connections(true);
+    uni_bt_start_scanning_and_autoconnect_unsafe();
+
+    pairing_mode_ = true;
+    pairing_mode_time_left_ms_ = CONFIG_PAIRING_MODE_WINDOW_MS;
+    refresh_status_display();
+}
+
+void BTManager::button_timer_cb(btstack_timer_source *ts)
+{
+    BTManager& bt_manager = get_instance();
+    const bool pressed = board_api::get_pair_button_pressed();
+
+    if (pressed && !bt_manager.pairing_button_latched_)
+    {
+        bt_manager.pairing_button_latched_ = true;
+        bt_manager.start_pairing_mode();
+    }
+    else if (!pressed)
+    {
+        bt_manager.pairing_button_latched_ = false;
+    }
+
+    if (bt_manager.pairing_mode_ && !bt_manager.any_connected())
+    {
+        if (bt_manager.pairing_mode_time_left_ms_ > BUTTON_CHECK_TIME_MS)
+        {
+            bt_manager.pairing_mode_time_left_ms_ -= BUTTON_CHECK_TIME_MS;
+            const uint32_t seconds_remaining = (bt_manager.pairing_mode_time_left_ms_ + 999) / 1000;
+            if (seconds_remaining != bt_manager.pairing_status_seconds_)
+            {
+                bt_manager.refresh_status_display();
+            }
+        }
+        else
+        {
+            bt_manager.pairing_mode_ = false;
+            bt_manager.pairing_mode_time_left_ms_ = 0;
+            uni_bt_stop_scanning_unsafe();
+            bt_manager.refresh_status_display();
+        }
+    }
+
+    btstack_run_loop_set_timer(ts, BUTTON_CHECK_TIME_MS);
     btstack_run_loop_add_timer(ts);
 }
 
@@ -220,6 +318,10 @@ void BTManager::manage_connection(uint8_t index, bool connected)
     devices_[index].connected.store(connected);
     if (connected)
     {
+        pairing_mode_ = false;
+        pairing_mode_time_left_ms_ = 0;
+        uni_bt_stop_scanning_unsafe();
+
         if (!fb_timer_running_)
         {
             fb_timer_running_ = true;
@@ -245,6 +347,8 @@ void BTManager::manage_connection(uint8_t index, bool connected)
         packet_in.index = index;
         i2c_driver_.write_packet(I2CDriver::MULTI_SLAVE ? packet_in.index + 1 : 0x01, packet_in);
     }
+
+    refresh_status_display();
 }
 
 I2CDriver::PacketIn BTManager::get_packet_in(uint8_t index)
