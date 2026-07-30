@@ -10,7 +10,7 @@ This is the minumum amount of connections you'll want for this to work and the d
 ![OGX-Mini](../images/DiagramPicoESP32.png)
 
 ## ESP32 Dev Module OLED and pairing button
-- Use an **SSD1306 0.91\" I2C OLED** on the ESP32 I2C lines:
+- Use an **SSD1306 0.91" I2C OLED** on the ESP32 I2C lines:
   - GPIO 21 -> SDA
   - GPIO 22 -> SCL
   - 3.3V -> VCC

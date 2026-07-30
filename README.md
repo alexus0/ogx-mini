@@ -101,7 +101,7 @@ Please visit [**this page**](https://bluepad32.readthedocs.io/en/latest/supporte
 For Pi Pico, RP2040-Zero, 4 channel, and ESP32 configurations, please see the hardware folder for diagrams.
 
 ### ESP32 Dev Module add-on
-- The ESP32 firmware now supports a **0.91\" SSD1306 OLED** on the same I2C bus as the RP2040 link.
+- The ESP32 firmware now supports a **0.91" SSD1306 OLED** on the same I2C bus as the RP2040 link.
 - Default ESP32 wiring:
     - **OLED SDA** -> GPIO 21
     - **OLED SCL** -> GPIO 22
